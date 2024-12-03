@@ -26,34 +26,68 @@ const switchPlayer = function () {
   player1El.classList.toggle('player--active');
 };
 
-const scores = [0, 0]; //score de cada jogador
-let currentScore = 0; // para o cálculo do score atual
-let activePlayer = 0; //para diferenciar os jogadores
+let scores, currentScore, activePlayer, playing;
+//condições iniciais
+const init = function () {
+  scores = [0, 0]; //score de cada jogador
+  currentScore = 0; // para o cálculo do score atual
+  activePlayer = 0;
+  playing = true;
+
+  player0El.classList.add('player--active');
+  player1El.classList.remove('player--active');
+  player0El.classList.remove('player--winner');
+  player1El.classList.remove('player--winner');
+
+  score0El.textContent = 0;
+  score1El.textContent = 0;
+  current0El.textContent = 0;
+  current1El.textContent = 0;
+  diceEl.classList.add('hidden');
+};
+init(); //rodar a função
 
 //Giro do dado
 btnRoll.addEventListener('click', function () {
-  //1. Gerar número aleatorio do dado:
-  const dice = Math.trunc(Math.random() * 6) + 1;
-  //2. Display o dado:
-  diceEl.classList.remove('hidden');
-  diceEl.src = `dice-${dice}.png`;
-  //3. Checar se o dado é 1. Se for, muda pro prox player:
-  if (dice !== 1) {
-    currentScore += dice;
-    document.getElementById(`current--${activePlayer}`).textContent =
-      currentScore;
-  } else {
+  if (playing) {
+    //1. Gerar número aleatorio do dado:
+    const dice = Math.trunc(Math.random() * 6) + 1;
+    //2. Display o dado:
+    diceEl.classList.remove('hidden');
+    diceEl.src = `dice-${dice}.png`;
+    //3. Checar se o dado é 1. Se for, muda pro prox player:
+    if (dice !== 1) {
+      currentScore += dice;
+      document.getElementById(`current--${activePlayer}`).textContent =
+        currentScore;
+    } else {
+      switchPlayer();
+    }
+  }
+});
+// Segurar os valores
+btnHold.addEventListener('click', function () {
+  if (playing) {
+    //1. adicionar o valor atual do score ao player
+    scores[activePlayer] += currentScore;
+    document.getElementById(`score--${activePlayer}`).textContent =
+      scores[activePlayer];
+    //2. checar se o score é 100 para finalizar
+    if (scores[activePlayer] >= 20) {
+      //para terminar o jogo:
+      playing = false;
+      diceEl.classList.add('hidden');
+      document
+        .querySelector(`.player--${activePlayer}`)
+        .classList.add('player--winner');
+      document
+        .querySelector(`.player--${activePlayer}`)
+        .classList.remove('player--active');
+    } else {
+      switchPlayer();
+    }
+    //3. Ou mudar para o próximo player
     switchPlayer();
   }
 });
-
-btnHold.addEventListener('click', function () {
-  //1. adicionar o valor atual do score ao player
-  scores[activePlayer] += currentScore;
-  document.getElementById(`score--${activePlayer}`).textContent =
-    scores[activePlayer];
-  //2. checar se o score é 100 para finalizar
-
-  //3. Ou mudar para o próximo player
-  switchPlayer();
-});
+btnNew.addEventListener('click', init);
